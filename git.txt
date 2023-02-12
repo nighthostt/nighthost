@@ -1,1 +1,45 @@
  git fetch --unshallow
+
+grpc没有现成的C++版本，在使用时必须自己下载源代码进行编译，这个过程不是很难，但是有很多坑。下面就将我在Ubuntu 16.04系统上编译、安装过程记录如下，方便大家参考和借鉴。
+
+1.安装相关的依赖工具和依赖包
+
+# 安装pkg-config
+sudo apt-get install pkg-config
+# 安装依赖包
+sudo apt-get install autoconf automake libtool make g++ unzip
+sudo apt-get install libgflags-dev libgtest-dev
+sudo apt-get install clang libc++-dev
+
+2.下载grpc源码
+
+在下载源码的过程中，需要注意的是，不要使用最新的版本，最新的版本一般不稳定或者有一些bug未修复。笔者在编译的过程中，从github上下载了最新的版本时，编译就报错了，有一个错误是一个源代码中的错误，看了源代码也未能解决。后来是下载了前面一点的版本才正常编译通过。
+
+# 下载特定版本的grpc源代码，这里最后下载到固定的地方，方便以后管理，默许下载于/home/user/grpc/目录
+git clone -b v1.14.0 https://github.com/grpc/grpc.git
+cd grpc
+# 下载其依赖的子模块
+git submodule update --init
+3.安装protobuf
+
+# 此时应在grpc文件夹下
+cd third_party/protobuf/
+# 更新依赖的子模块
+git submodule update --init --recursive
+# 生成配置脚本
+sudo ./autogen.sh   
+# 生成makefile文件
+sudo ./configure
+# 从makefile读取指令编译
+sudo make
+# 可能报错，但不影响安装
+sudo make check
+# 安装
+sudo make install
+# 更新共享库缓存
+sudo ldconfig
+# 查看安装的位置
+which protoc
+#查看是否安装成功
+protoc --version
+在编译过程中，若make版本太低，可以用make uninstall命令先卸载再重新安装新版本。清除编译过程中产生的文件及目标文件，可用make clean命令
